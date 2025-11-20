@@ -5,8 +5,10 @@ import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
 import jsxA11y from "eslint-plugin-jsx-a11y";
 import prettierConfig from "eslint-config-prettier";
+import pluginQuery from "@tanstack/eslint-plugin-query";
 
 export default [
+  ...pluginQuery.configs["flat/recommended"],
   {
     ignores: [
       "**/node_modules/**",
@@ -58,6 +60,8 @@ export default [
 
       // React Hooks rules
       ...reactHooksPlugin.configs.recommended.rules,
+
+      // TanStack Query rules
 
       // JSX A11y rules
       ...jsxA11y.configs.recommended.rules,

@@ -1,9 +1,20 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
+import { AlertCircle } from "lucide-react";
 
 export default function Home() {
+  const [shouldThrow, setShouldThrow] = useState(false);
+
+  // This will trigger error.tsx
+  if (shouldThrow) {
+    throw new Error("💥 Test error - Error boundary triggered!");
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between px-16 py-32 bg-white dark:bg-black sm:items-start">
         <Image
           className="dark:invert"
           src="/next.svg"
@@ -33,7 +44,28 @@ export default function Home() {
             </a>{" "}
             center.
           </p>
+
+          {/* Error Testing Section */}
+          <div className="mt-8 w-full max-w-md rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950">
+            <div className="mb-2 flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+              <h3 className="font-semibold text-red-900 dark:text-red-100">
+                Error Boundary Test
+              </h3>
+            </div>
+            <p className="mb-4 text-sm text-red-700 dark:text-red-300">
+              Click the button below to test the error boundary. This will
+              trigger error.tsx
+            </p>
+            <button
+              onClick={() => setShouldThrow(true)}
+              className="w-full rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
+            >
+              Throw Test Error
+            </button>
+          </div>
         </div>
+
         <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
           <a
             className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
