@@ -1,5 +1,5 @@
 {
-  "name": "lovememora-dashboard",
+  "name": "reddit-search-clone",
   "version": "0.1.0",
   "author": {
     "name": "Thar Lin Htet",
@@ -17,13 +17,18 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-label": "^2.1.8",
+    "@radix-ui/react-popover": "^1.1.15",
+    "@radix-ui/react-separator": "^1.1.8",
     "@radix-ui/react-slot": "^1.2.4",
+    "@radix-ui/react-tooltip": "^1.2.8",
     "@tanstack/react-query": "^5.90.10",
     "@tanstack/react-query-devtools": "^5.90.2",
     "axios": "^1.13.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
     "dayjs": "^1.11.19",
     "lucide-react": "^0.553.0",
     "next": "16.0.3",
@@ -31,6 +36,7 @@
     "react-dom": "19.2.0",
     "react-hook-form": "^7.66.1",
     "tailwind-merge": "^3.4.0",
+    "use-debounce": "^10.0.6",
     "zod": "^4.1.12",
     "zustand": "^5.0.8"
   },
@@ -51,6 +57,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-prettier": "^5.5.4",
+    "globals": "^16.5.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.6",
     "prettier": "^3.6.2",

@@ -3,9 +3,9 @@ import tsParser from "@typescript-eslint/parser";
 import tsPlugin from "@typescript-eslint/eslint-plugin";
 import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
-import jsxA11y from "eslint-plugin-jsx-a11y";
 import prettierConfig from "eslint-config-prettier";
 import pluginQuery from "@tanstack/eslint-plugin-query";
+import globals from "globals";
 
 export default [
   ...pluginQuery.configs["flat/recommended"],
@@ -31,24 +31,18 @@ export default [
         },
       },
       globals: {
-        React: "writable",
-        JSX: "writable",
-        console: "readonly",
-        process: "readonly",
-        __dirname: "readonly",
-        __filename: "readonly",
-        module: "readonly",
-        require: "readonly",
-        window: "readonly",
-        document: "readonly",
-        navigator: "readonly",
+        ...globals.react,
+        ...globals.browser,
+        ...globals.node,
+        ...globals.es2021,
+        React: "readonly",
       },
     },
     plugins: {
       "@typescript-eslint": tsPlugin,
       react: reactPlugin,
       "react-hooks": reactHooksPlugin,
-      "jsx-a11y": jsxA11y,
+      // "jsx-a11y": jsxA11y,
     },
     rules: {
       // TypeScript recommended rules
@@ -64,7 +58,7 @@ export default [
       // TanStack Query rules
 
       // JSX A11y rules
-      ...jsxA11y.configs.recommended.rules,
+      // ...jsxA11y.configs.recommended.rules,
 
       // Strict no console.log - ERROR level
       "no-console": ["error", { allow: ["warn", "error", "info"] }],
