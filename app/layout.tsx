@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { App } from "./app";
+import Navbar from "@/components/common/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DashBoard - LoveMemora",
-  description: "DashBoard for LoveMemora application",
+  title: "Reddit Search Clone",
 };
 
 export default function RootLayout({
@@ -28,7 +28,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <App>{children}</App>
+        <App>
+          <Navbar />
+          {children}
+        </App>
       </body>
     </html>
   );

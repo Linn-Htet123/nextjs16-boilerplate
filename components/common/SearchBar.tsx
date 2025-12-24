@@ -1,15 +1,18 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useDebounce } from "use-debounce";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SearchSuggestions } from "./SearchSuggestion";
-import { useGetSuggestion } from "@/hooks/useGetSuggestion";
+import { useGetSuggestion } from "@/hooks/api/useGetSuggestion";
 import { X } from "lucide-react";
 import RedditBotIcon from "../icon/RedditBotIcon";
 import { Separator } from "../ui/separator";
 import AskIcon from "../icon/AskIcon";
+import { useURLSearchParams } from "@/hooks/common/useSearchParams";
+import { useRouter, useParams } from "next/navigation";
 
 type Suggestion = {
   id: string;
@@ -19,14 +22,34 @@ type Suggestion = {
 };
 
 export default function Search({ placeholder = "Find Anything" }) {
+  const router = useRouter();
+  const params = useParams();
+  const { setURLSearchParams } = useURLSearchParams();
+
   const [query, setQuery] = useState("");
-  const [type, setType] = useState<"subreddit" | "post" | "query" | "">("");
+  const [selectedSubreddit, setSelectedSubreddit] = useState<string>("");
+
+  useEffect(() => {
+    setSelectedSubreddit((params.subreddit as string) ?? "");
+  }, [params.subreddit]);
+
   const [debouncedQuery] = useDebounce(query, 300);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isFocused, setIsFocused] = useState(false);
+
   const containerRef = useRef<HTMLDivElement>(null);
+  const pillRef = useRef<HTMLDivElement>(null);
+  const [pillWidth, setPillWidth] = useState(45); // Default padding
 
   const { data, isPending } = useGetSuggestion(isFocused ? debouncedQuery : "");
+
+  useLayoutEffect(() => {
+    if (selectedSubreddit && pillRef.current) {
+      setPillWidth(pillRef.current.offsetWidth + 48);
+    } else {
+      setPillWidth(48);
+    }
+  }, [selectedSubreddit]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -46,79 +69,94 @@ export default function Search({ placeholder = "Find Anything" }) {
     setSelectedIndex(-1);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace" && query === "" && selectedSubreddit) {
+      clearInput();
+    }
+  };
+
   const clearInput = () => {
-    setType("");
     setQuery("");
+    setSelectedSubreddit("");
     setSelectedIndex(-1);
+    router.push("/search");
   };
 
   const handleSelect = (item: Suggestion) => {
-    setType(item.type === "query" ? "" : item.type);
     if (item.type === "subreddit") {
-      setQuery(item.url);
-    } else {
-      setQuery(item.text);
+      const targetUrl = item.url || `/r/${item.text}`;
+      router.push(targetUrl);
+      setQuery("");
+      setIsFocused(true);
+      return;
     }
+
+    const searchParams: Record<string, string> = {
+      q: item.text,
+    };
+
+    setURLSearchParams(searchParams, "/search");
     setIsFocused(false);
   };
 
   return (
     <div ref={containerRef} className="relative w-full max-w-2xl mx-auto">
-      <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+      {/* Search Icon */}
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 z-20 pointer-events-none">
         <RedditBotIcon />
       </div>
 
-      {type === "subreddit" && (
-        <Button
-          size={"sm"}
-          variant={"outline"}
-          className="absolute left-10 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pl-4 ml-1"
+      {/* Subreddit Pill */}
+      {selectedSubreddit && (
+        <div
+          ref={pillRef}
+          className="absolute left-11 top-1/2 -translate-y-1/2 z-20 flex items-center bg-muted px-2 py-1 rounded-full border text-xs font-medium"
         >
-          {query}
-        </Button>
+          r/{selectedSubreddit}
+          <button onClick={clearInput} className="ml-1 hover:text-destructive">
+            <X className="h-3 w-3" />
+          </button>
+        </div>
       )}
+
       <Input
         value={query}
         onChange={handleInputChange}
+        onKeyDown={handleKeyDown}
         onFocus={() => setIsFocused(true)}
-        placeholder={placeholder}
-        className={`
-  w-full h-10 ${type === "subreddit" ? "pl-32" : "pl-12"} pr-20
-  rounded-full text-sm
-  border border-input
-  hover:border-primary
-  focus-visible:border-primary
-  focus-visible:ring-0
-  focus-visible:ring-offset-0
-  focus:outline-none
-  transition-colors
-`}
+        placeholder={
+          selectedSubreddit ? `Search in r/${selectedSubreddit}` : placeholder
+        }
+        style={{ paddingLeft: `${pillWidth}px` }}
+        className="w-full h-10 pr-24 rounded-full text-sm border border-input hover:border-primary focus-visible:border-primary focus-visible:ring-0 transition-all"
       />
 
+      {/* Right side buttons */}
       <div className="flex items-center absolute right-2 top-1/2 -translate-y-1/2 gap-1">
         {query && (
-          <Button variant="ghost" size="icon" onClick={clearInput}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={clearInput}
+          >
             <X className="h-4 w-4" />
           </Button>
         )}
-
-        <div className="h-5">
-          <Separator orientation="vertical" />
-        </div>
-
-        <Button variant="ghost">
+        <Separator orientation="vertical" className="h-5" />
+        <Button variant="ghost" size="sm" className="gap-2">
           <AskIcon />
-          Ask
+          <span>Ask</span>
         </Button>
       </div>
 
-      {!isPending && isFocused && data && (
+      {!isPending && isFocused && (
         <SearchSuggestions
           searchQuery={debouncedQuery}
-          suggestions={data}
+          suggestions={data || []}
           selectedIndex={selectedIndex}
           onSelect={handleSelect}
-          className="absolute z-10 mt-1 w-full border bg-background rounded-md shadow-sm"
+          className="absolute z-50 mt-2 w-full border bg-background rounded-xl shadow-lg overflow-hidden"
         />
       )}
     </div>
